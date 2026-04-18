@@ -16,6 +16,7 @@ services:
       - "8081:8080"
     networks:
       - sourceofvoice
+      - auth-postgres-n
 
   auth-postgres:
     image: postgres
@@ -29,11 +30,11 @@ services:
 
   redis:
     image: redis:latest
-    container_name: token_redis
+    container_name: refresh_token_redis
     ports:
        - "6379:6379"
     networks:
-       - articulate
+       - sourceofvoice
     volumes:
       - redis-data:/data
     command: [ "redis-server", "--save", "60", "1", "--loglevel", "warning" ]
