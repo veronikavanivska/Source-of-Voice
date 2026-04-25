@@ -48,7 +48,6 @@ public class AuthService {
         this.refreshTokenRepository = refreshTokenRepository;
 
     }
-    //TODO: do the endpoints, make validation jwt and RBAC in api-gateway, try the first routing from gateway, start the first section of report(for project and personal in Latex(security-by-design))
 
     public String register(RegisterRequest request) {
 
@@ -59,11 +58,11 @@ public class AuthService {
             throw new IllegalArgumentException("Email cannot be empty");
         }
 
-        if (checkInput.isEmailValid(email)) {
+        if (!checkInput.isEmailValid(email)) {
             throw new IllegalArgumentException("Enter right email");
         }
 
-        if (checkInput.isPasswordStrong(password)) {
+        if (!checkInput.isPasswordStrong(password)) {
             throw new IllegalArgumentException("Password isn't strong");
         }
 
@@ -127,7 +126,7 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
 
         redisTemplate.opsForValue().set(
-                "auth:user:ver:" + user.getId(),
+                "usr:ver:" + user.getId(),
                 String.valueOf(user.getTokenVersion()),
                 Duration.ofDays(1)
         );
@@ -272,5 +271,16 @@ public class AuthService {
         return "Changed username";
     }
 
+    public long getCurrentTokenVersion(Long userId) {
+        User user = userRepository.findUsersById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        redisTemplate.opsForValue().set(
+                "usr:ver:" + userId,
+                String.valueOf(user.getTokenVersion()),
+                Duration.ofDays(1)
+        );
+
+        return user.getTokenVersion();
+    }
 }

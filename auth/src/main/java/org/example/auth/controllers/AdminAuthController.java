@@ -1,0 +1,27 @@
+package org.example.auth.controllers;
+
+import org.example.auth.DTO.request.AssignRoleRequest;
+import org.example.auth.DTO.request.RevokeRoleRequest;
+import org.example.auth.services.AdminAuthService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/auth/admin")
+public class AdminAuthController {
+
+    private final AdminAuthService adminAuthService;
+
+    public AdminAuthController(AdminAuthService adminAuthService){
+        this.adminAuthService = adminAuthService;
+    }
+
+    @PostMapping("/assign/role")
+    public String assignRole(@RequestBody AssignRoleRequest request){
+        return adminAuthService.assignRole(request);
+    }
+
+    @PostMapping("/revoke/role")
+    public String revokeRole(@RequestBody RevokeRoleRequest request){
+        return adminAuthService.revokeRole(request);
+    }
+}
