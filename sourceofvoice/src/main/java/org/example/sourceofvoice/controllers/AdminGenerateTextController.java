@@ -2,19 +2,18 @@ package org.example.sourceofvoice.controllers;
 
 import org.example.sourceofvoice.DTO.requests.GenerateWikipediaTextsRequest;
 import org.example.sourceofvoice.DTO.responses.GenerateWikipediaTextsResponse;
-import org.example.sourceofvoice.services.AdminTextService;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.example.sourceofvoice.services.AdminGenerateTextService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/sofv/admin/texts")
-public class AdminTextController {
+public class AdminGenerateTextController {
 
-    private final AdminTextService adminTextService;
+    private final AdminGenerateTextService adminGenerateTextService;
 
-    public AdminTextController(AdminTextService adminTextService) {
-        this.adminTextService = adminTextService;
+    public AdminGenerateTextController(AdminGenerateTextService adminGenerateTextService) {
+        this.adminGenerateTextService = adminGenerateTextService;
     }
 
     @PostMapping("/generate")
@@ -22,6 +21,6 @@ public class AdminTextController {
             @RequestBody GenerateWikipediaTextsRequest request
             ,@RequestHeader("X-User-Id") Long userId
     ) {
-        return adminTextService.generateTextFromWikipedia(request, userId);
+        return adminGenerateTextService.generateTextFromWikipedia(request, userId);
     }
 }

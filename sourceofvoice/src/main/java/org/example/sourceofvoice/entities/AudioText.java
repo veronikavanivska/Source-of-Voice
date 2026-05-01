@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Table("audio_texts")

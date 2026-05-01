@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class AdminTextService {
+public class AdminGenerateTextService {
 
     private static final int DEFAULT_WIKIPEDIA_FETCH_LIMIT = 100;
     private static final int MAX_WIKIPEDIA_FETCH_LIMIT = 500;
@@ -32,7 +32,7 @@ public class AdminTextService {
     private final TextMetricsService textMetricsService;
     private final AudioTextBatchRepository audioTextBatchRepository;
 
-    public AdminTextService(WikipediaClient wikipediaClient, AudioTextRepository audioTextRepository, TextMetricsService textMetricsService, AudioTextBatchRepository audioTextBatchRepository){
+    public AdminGenerateTextService(WikipediaClient wikipediaClient, AudioTextRepository audioTextRepository, TextMetricsService textMetricsService, AudioTextBatchRepository audioTextBatchRepository){
         this.wikipediaClient = wikipediaClient;
         this.audioTextRepository = audioTextRepository;
         this.textMetricsService = textMetricsService;
