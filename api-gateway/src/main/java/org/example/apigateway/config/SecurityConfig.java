@@ -35,7 +35,7 @@ public class SecurityConfig {
                                 "/auth/register",
                                 "/auth/refresh"
                         ).permitAll()
-                        .pathMatchers("/auth/admin/**").hasRole("ADMIN")
+                        .pathMatchers("/auth/admin/**", "/sofv/admin/**").hasRole("ADMIN")
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

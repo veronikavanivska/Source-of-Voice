@@ -1,4 +1,4 @@
-package org.example.auth.config;
+package org.example.sourceofvoice.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
