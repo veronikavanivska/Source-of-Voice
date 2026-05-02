@@ -1,7 +1,7 @@
-package org.example.sourceofvoice.DTO.responses;
+package org.example.sourceofvoice.DTO.responses.text;
 
 import lombok.Data;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

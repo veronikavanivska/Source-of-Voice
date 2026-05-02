@@ -63,10 +63,23 @@ services:
       - redis-data:/data
     command: [ "redis-server", "--save", "60", "1", "--loglevel", "warning" ]
 
+  minio:
+    image: minio/minio:latest
+    container_name: "sourceofvoice-minio"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: ["server", "/data", "--console-address", ":9001"]
+    networks:
+      - sourceofvoice
+    volumes:
+      - minio-data:/data
+
 volumes:
   auth_service_postgres:
   sourceofvoice_service_postgres:
   redis-data:
+  minio-data:
 
 networks:
   sourceofvoice:

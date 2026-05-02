@@ -1,9 +1,9 @@
 package org.example.sourceofvoice.services;
 
-import org.example.sourceofvoice.DTO.responses.*;
-import org.example.sourceofvoice.entities.AudioText;
-import org.example.sourceofvoice.entities.AudioTextBatch;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.DTO.responses.text.*;
+import org.example.sourceofvoice.entities.text.AudioText;
+import org.example.sourceofvoice.entities.text.AudioTextBatch;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.example.sourceofvoice.repositories.AudioTextBatchRepository;
 import org.example.sourceofvoice.repositories.AudioTextRepository;
 import org.springframework.data.domain.PageRequest;

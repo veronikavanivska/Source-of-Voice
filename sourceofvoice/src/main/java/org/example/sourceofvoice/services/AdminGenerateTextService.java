@@ -1,14 +1,14 @@
 package org.example.sourceofvoice.services;
 
 
-import org.example.sourceofvoice.DTO.requests.GenerateWikipediaTextsRequest;
-import org.example.sourceofvoice.DTO.responses.GenerateWikipediaTextsResponse;
-import org.example.sourceofvoice.DTO.responses.WikipediaExtractResponse;
-import org.example.sourceofvoice.DTO.responses.WikipediaRandomResponse;
-import org.example.sourceofvoice.entities.AudioText;
-import org.example.sourceofvoice.entities.AudioTextBatch;
-import org.example.sourceofvoice.entities.AudioTextBatchStatus;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.DTO.requests.text.GenerateWikipediaTextsRequest;
+import org.example.sourceofvoice.DTO.responses.text.GenerateWikipediaTextsResponse;
+import org.example.sourceofvoice.DTO.responses.text.WikipediaExtractResponse;
+import org.example.sourceofvoice.DTO.responses.text.WikipediaRandomResponse;
+import org.example.sourceofvoice.entities.text.AudioText;
+import org.example.sourceofvoice.entities.text.AudioTextBatch;
+import org.example.sourceofvoice.entities.text.AudioTextBatchStatus;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.example.sourceofvoice.helper.WikipediaClient;
 import org.example.sourceofvoice.repositories.AudioTextBatchRepository;
 import org.example.sourceofvoice.repositories.AudioTextRepository;

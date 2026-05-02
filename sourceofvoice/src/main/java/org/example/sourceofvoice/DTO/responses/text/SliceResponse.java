@@ -1,4 +1,4 @@
-package org.example.sourceofvoice.DTO.responses;
+package org.example.sourceofvoice.DTO.responses.text;
 
 import lombok.Data;
 

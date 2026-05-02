@@ -1,4 +1,4 @@
-package org.example.sourceofvoice.entities;
+package org.example.sourceofvoice.entities.text;
 
 public enum AudioTextStatus {
     GENERATED,

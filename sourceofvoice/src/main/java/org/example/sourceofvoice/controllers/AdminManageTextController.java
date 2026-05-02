@@ -1,7 +1,7 @@
 package org.example.sourceofvoice.controllers;
 
-import org.example.sourceofvoice.DTO.responses.*;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.DTO.responses.text.*;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.example.sourceofvoice.services.AdminManageTextService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

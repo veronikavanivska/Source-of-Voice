@@ -1,8 +1,8 @@
 package org.example.sourceofvoice.helper;
 
 import lombok.RequiredArgsConstructor;
-import org.example.sourceofvoice.DTO.responses.WikipediaExtractResponse;
-import org.example.sourceofvoice.DTO.responses.WikipediaRandomResponse;
+import org.example.sourceofvoice.DTO.responses.text.WikipediaExtractResponse;
+import org.example.sourceofvoice.DTO.responses.text.WikipediaRandomResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

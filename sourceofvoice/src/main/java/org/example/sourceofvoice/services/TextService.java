@@ -1,10 +1,10 @@
 package org.example.sourceofvoice.services;
 
-import org.example.sourceofvoice.DTO.responses.SliceResponse;
-import org.example.sourceofvoice.DTO.responses.UserAudioTextDetailsResponse;
-import org.example.sourceofvoice.DTO.responses.UserAudioTextListItemResponse;
-import org.example.sourceofvoice.entities.AudioText;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.DTO.responses.text.SliceResponse;
+import org.example.sourceofvoice.DTO.responses.text.UserAudioTextDetailsResponse;
+import org.example.sourceofvoice.DTO.responses.text.UserAudioTextListItemResponse;
+import org.example.sourceofvoice.entities.text.AudioText;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.example.sourceofvoice.repositories.AudioTextRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

@@ -1,8 +1,8 @@
 package org.example.sourceofvoice.controllers;
 
-import org.example.sourceofvoice.DTO.responses.SliceResponse;
-import org.example.sourceofvoice.DTO.responses.UserAudioTextDetailsResponse;
-import org.example.sourceofvoice.DTO.responses.UserAudioTextListItemResponse;
+import org.example.sourceofvoice.DTO.responses.text.SliceResponse;
+import org.example.sourceofvoice.DTO.responses.text.UserAudioTextDetailsResponse;
+import org.example.sourceofvoice.DTO.responses.text.UserAudioTextListItemResponse;
 import org.example.sourceofvoice.services.TextService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

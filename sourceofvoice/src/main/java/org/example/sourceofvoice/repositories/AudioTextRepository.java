@@ -1,7 +1,7 @@
 package org.example.sourceofvoice.repositories;
 
-import org.example.sourceofvoice.entities.AudioText;
-import org.example.sourceofvoice.entities.AudioTextStatus;
+import org.example.sourceofvoice.entities.text.AudioText;
+import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;

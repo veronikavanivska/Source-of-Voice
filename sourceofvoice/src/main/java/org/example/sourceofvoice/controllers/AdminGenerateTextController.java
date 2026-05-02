@@ -1,7 +1,7 @@
 package org.example.sourceofvoice.controllers;
 
-import org.example.sourceofvoice.DTO.requests.GenerateWikipediaTextsRequest;
-import org.example.sourceofvoice.DTO.responses.GenerateWikipediaTextsResponse;
+import org.example.sourceofvoice.DTO.requests.text.GenerateWikipediaTextsRequest;
+import org.example.sourceofvoice.DTO.responses.text.GenerateWikipediaTextsResponse;
 import org.example.sourceofvoice.services.AdminGenerateTextService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
