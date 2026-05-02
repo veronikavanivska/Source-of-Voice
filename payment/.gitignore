@@ -31,8 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-/auth/src/main/resources/application.properties
-/api-gateway/src/main/resources/application.properties
-/sourceofvoice/src/main/resources/application.properties
-/payment/src/main/resources/application.properties

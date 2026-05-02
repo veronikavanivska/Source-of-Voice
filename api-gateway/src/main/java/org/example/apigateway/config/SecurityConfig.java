@@ -36,6 +36,8 @@ public class SecurityConfig {
                                 "/auth/refresh"
                         ).permitAll()
                         .pathMatchers("/auth/admin/**", "/sofv/admin/**").hasRole("ADMIN")
+                        .pathMatchers( "/sofv/reviewer/**").hasRole("REVIEWER")
+                        .pathMatchers("/payments/internal/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
