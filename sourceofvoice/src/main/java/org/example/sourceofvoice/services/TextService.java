@@ -43,7 +43,7 @@ public class TextService {
 
     public Mono<UserAudioTextDetailsResponse> getActiveTextDetails(Long id){
         return audioTextRepository.findByIdAndStatus(id, AudioTextStatus.ACTIVE)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Audion text not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Requested resource not found")))
                 .map(this::toUserDetails);
     }
 

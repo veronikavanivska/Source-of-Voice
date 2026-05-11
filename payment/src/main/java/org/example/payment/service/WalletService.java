@@ -54,11 +54,6 @@ public class WalletService {
                 .map(this::toWalletResponse);
     }
 
-    public Mono<WalletResponse> getOfCreateWallet(Long userId){
-        return getOrCreateWallet(userId)
-                .map(this::toWalletResponse);
-    }
-
     public Mono<SliceResponse<WalletTransactionResponse>> getTransactions(Long userId, int page, int size){
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 50);
@@ -99,7 +94,7 @@ public class WalletService {
                 .onErrorMap(DataIntegrityViolationException.class, error ->
                         new ResponseStatusException(
                                 HttpStatus.CONFLICT,
-                                "Payment for this audio submission already exists"
+                                "Payment operation could not be completed"
                         )
                 )
                 .map(this::toTransactionResponse);
@@ -130,7 +125,7 @@ public class WalletService {
                 .one()
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Wallet balance update failed"
+                        "Unable to process payment request"
                 )));
     }
 
@@ -166,7 +161,7 @@ public class WalletService {
                 .one()
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Transaction completion failed"
+                        "Unable to process payment request"
                 )));
     }
 
@@ -190,7 +185,7 @@ public class WalletService {
         return walletRepository.findByUserId(request.getUserId())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Wallet was not created"
+                        "Unable to process payment request"
                 )))
                 .flatMap(wallet -> {
                     transaction.setWalletId(wallet.getId());
@@ -198,7 +193,7 @@ public class WalletService {
                 });
     }
 
-
+//zostało do debugowania  dla mnie
     private void validateRewardRequest(RewardAudioPaymentRequest request) {
         if (request == null) {
             throw new ResponseStatusException(

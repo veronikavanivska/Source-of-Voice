@@ -56,14 +56,14 @@ public class WalletController {
         if (internalSecret == null || internalSecret.isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Missing internal secret"
+                    "Access denied"
             );
         }
 
         if (!internalApiSecret.equals(internalSecret)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Invalid internal secret"
+                    "Access denied"
             );
         }
     }

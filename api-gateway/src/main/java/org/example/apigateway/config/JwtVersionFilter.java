@@ -31,7 +31,7 @@ public class JwtVersionFilter implements WebFilter {
                     if (sub == null || verNum == null) {
                         return Mono.error(new ResponseStatusException(
                                 HttpStatus.UNAUTHORIZED,
-                                "missing subject or version"
+                                "Unauthorized"
                         ));
                     }
 
@@ -42,7 +42,7 @@ public class JwtVersionFilter implements WebFilter {
                                 if (currentVersion != tokenVer) {
                                     return Mono.error(new ResponseStatusException(
                                             HttpStatus.UNAUTHORIZED,
-                                            "stale token version"
+                                            "Unauthorized"
                                     ));
                                 }
                                 return chain.filter(exchange);

@@ -93,7 +93,7 @@ public class ReviewerAudioSubmissionService {
         return audioSubmissionRepository.findById(submissionId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Audio submission not found"
+                        "Submission not available"
                 )))
                 .flatMap(submission -> {
                     validateReviewerCanViewSubmission(submission, reviewerId);
@@ -101,7 +101,7 @@ public class ReviewerAudioSubmissionService {
                     return audioTextRepository.findById(submission.getAudioTextId())
                             .switchIfEmpty(Mono.error(new ResponseStatusException(
                                     HttpStatus.NOT_FOUND,
-                                    "Audio text not found"
+                                    "Requested resource not allowed"
                             )))
                             .map(text -> toDetailsResponse(submission, text));
                 });
@@ -111,20 +111,20 @@ public class ReviewerAudioSubmissionService {
         return audioSubmissionRepository.findById(submissionId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Audio submission not found"
+                        "Submission not available"
                 )))
                 .flatMap(submission -> {
                     if(submission.getStatus() != AudioSubmissionStatus.NEEDS_REVIEW){
                         return Mono.error(new ResponseStatusException(
                                 HttpStatus.CONFLICT,
-                                "Submission is not available for review"
+                                "Submission not available"
                         ));
                     }
 
                     if (submission.getAssignedReviewerId() != null) {
                         return Mono.error(new ResponseStatusException(
                                 HttpStatus.CONFLICT,
-                                "Submission is already assigned"
+                                "Operation not allowed"
                         ));
                     }
 
@@ -141,7 +141,7 @@ public class ReviewerAudioSubmissionService {
         return audioSubmissionRepository.findById(submissionId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Audio submission not found"
+                        "Submission not available"
                 )))
                 .flatMap(submission -> {
                     validateReviewerOwnsSubmission(submission,reviewerId);
@@ -169,7 +169,7 @@ public class ReviewerAudioSubmissionService {
         return audioSubmissionRepository.findById(submissionId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Audio submission not found"
+                        "Submission not available"
                 )))
                 .flatMap(submission -> {
                     validateReviewerOwnsSubmission(submission,reviewerId);
@@ -190,7 +190,7 @@ public class ReviewerAudioSubmissionService {
         return audioSubmissionRepository.findById(submissionId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Audio submission not found"
+                        "Submission not available"
                 )))
                 .flatMap(submission -> {
                     validateReviewerCanViewSubmission(submission, reviewerId);
@@ -223,7 +223,7 @@ public class ReviewerAudioSubmissionService {
         if (!submission.getAssignedReviewerId().equals(reviewerId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Submission is assigned to another reviewer"
+                    "Submission not available"
             );
         }
     }
@@ -235,21 +235,21 @@ public class ReviewerAudioSubmissionService {
         if (submission.getStatus() != AudioSubmissionStatus.IN_REVIEW) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Submission is not currently in review"
+                    "Conflict"
             );
         }
 
         if (submission.getAssignedReviewerId() == null) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Submission is not assigned"
+                    "Conflict"
             );
         }
 
         if (!submission.getAssignedReviewerId().equals(reviewerId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Submission is assigned to another reviewer"
+                    "Forbidden"
             );
         }
     }

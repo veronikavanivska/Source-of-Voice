@@ -35,10 +35,10 @@ public class AdminAuthService {
         RoleName roleName = request.getRoleName();
 
         User user = userRepository.findByIdWithRoles(userId)
-                .orElseThrow(()->new IllegalArgumentException("User does not exist"));
+                .orElseThrow(()->new IllegalArgumentException("Unable to update user role"));
 
         Role role = roleRepository.findRoleByName(roleName)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleName));
+                .orElseThrow(() -> new IllegalArgumentException("Unable to update user role: " + roleName));
 
         boolean added = user.getRoles().add(role);
         if (added) {
@@ -57,10 +57,10 @@ public class AdminAuthService {
         RoleName roleName = request.getRoleName();
 
         User user = userRepository.findByIdWithRoles(userId)
-                .orElseThrow(()->new IllegalArgumentException("User does not exist"));
+                .orElseThrow(()->new IllegalArgumentException("Unable to update user role"));
 
         Role role = roleRepository.findRoleByName(roleName)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleName));
+                .orElseThrow(() -> new IllegalArgumentException("Unable to update user role: " + roleName));
 
         boolean removed = user.getRoles().remove(role);
         if (removed) {

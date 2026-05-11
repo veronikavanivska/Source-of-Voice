@@ -36,3 +36,5 @@ build/
 /api-gateway/src/main/resources/application.properties
 /sourceofvoice/src/main/resources/application.properties
 /payment/src/main/resources/application.properties
+
+.env

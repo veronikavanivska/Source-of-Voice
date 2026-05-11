@@ -8,7 +8,7 @@ import org.example.sourceofvoice.entities.text.AudioText;
 import org.example.sourceofvoice.entities.text.AudioTextStatus;
 import org.example.sourceofvoice.repositories.AudioSubmissionRepository;
 import org.example.sourceofvoice.repositories.AudioTextRepository;
-import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,114 +17,131 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 @Service
 public class AudioSubmissionService {
+
     private static final long MAX_AUDIO_SIZE_BYTES = 20L * 1024L * 1024L;
+
+    private static final Pattern SAFE_FILENAME_PATTERN =
+            Pattern.compile("^[a-zA-Z0-9._-]{1,100}$");
+
     private final AudioStorageService audioStorageService;
     private final AudioSubmissionRepository audioSubmissionRepository;
     private final AudioTextRepository audioTextRepository;
 
-    public AudioSubmissionService(AudioStorageService audioStorageService, AudioSubmissionRepository audioSubmissionRepository, AudioTextRepository audioTextRepository) {
+    @Value("${spring.webflux.multipart.file-storage-directory:/tmp/sourceofvoice-upload}")
+    private String multipartTempDirectory;
+
+    public AudioSubmissionService(AudioStorageService audioStorageService,
+                                  AudioSubmissionRepository audioSubmissionRepository,
+                                  AudioTextRepository audioTextRepository) {
         this.audioStorageService = audioStorageService;
         this.audioSubmissionRepository = audioSubmissionRepository;
         this.audioTextRepository = audioTextRepository;
     }
 
-    public Mono<AudioSubmissionResponse> submitAudio(Long audioTextId, Long userId, FilePart file){
+    public Mono<AudioSubmissionResponse> submitAudio(Long audioTextId, Long userId, FilePart file) {
         return audioTextRepository.findByIdAndStatus(audioTextId, AudioTextStatus.ACTIVE)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Active text for audio not found"
+                        "Requested resource not found"
                 )))
-                .flatMap(text -> readFileBytes(file)
-                        .flatMap(bytes -> createSubmission(text,userId,file,bytes)))
+                .flatMap(text -> saveAndProcessTempFile(text, userId, file))
                 .map(this::toResponse);
     }
 
-    public Mono<SliceResponse<AudioSubmissionResponse>> getUserSubmissions(Long userId, int page, int size){
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 50);
+    private Mono<AudioSubmission> saveAndProcessTempFile(AudioText text, Long userId, FilePart file) {
+        String safeOriginalFilename = validateAndNormalizeFilename(file);
 
-        Pageable pageable = PageRequest.of(
-                safePage,
-                safeSize + 1,
-                Sort.by(Sort.Direction.DESC, "submittedAt")
-        );
-
-        return audioSubmissionRepository.findByUserId(userId,pageable)
-                .map(this::toResponse)
-                .collectList()
-                .map(items -> SliceResponse.of(items,safePage,safeSize));
-
+        return createTempFile()
+                .flatMap(tempFile ->
+                        file.transferTo(tempFile)
+                                .then(validateTempFile(tempFile))
+                                .flatMap(validatedPath -> createSubmission(
+                                        text,
+                                        userId,
+                                        validatedPath,
+                                        safeOriginalFilename
+                                ))
+                                .doFinally(signal -> deleteTempFileQuietly(tempFile))
+                );
     }
 
-    private Mono<AudioSubmission> createSubmission(AudioText text, Long userId, FilePart file, byte[] bytes){
-        validateAudio(file, bytes);
-
-        return audioStorageService.storeAudio(file, bytes, userId, text.getId()).flatMap(storeFile -> {
-            AudioSubmission submission = AudioSubmission.builder()
-                    .userId(userId)
-                    .audioTextId(text.getId())
-                    .status(AudioSubmissionStatus.SUBMITTED)
-                    .bucketName(storeFile.getBucketName())
-                    .objectKey(storeFile.getObjectKey())
-                    .originalFileName(storeFile.getOriginalFileName())
-                    .contentType(storeFile.getContentType())
-                    .fileSizeBytes(storeFile.getFileSizeBytes())
-                    .payoutAmount(text.getBasePrice())
-                    .submittedAt(LocalDateTime.now())
-                    .build();
-
-            return audioSubmissionRepository.save(submission);
-        });
-    }
-
-    private Mono<byte[]> readFileBytes(FilePart file){
-        return file.content()
-                .reduce(new ByteArrayOutputStream(), (outputStream, dataBuffer) -> {
-                    try {
-                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                        dataBuffer.read(bytes);
-                        outputStream.write(bytes);
-                        return outputStream;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        DataBufferUtils.release(dataBuffer);
-                    }
+    private Mono<Path> createTempFile() {
+        return Mono.fromCallable(() -> {
+                    Path uploadDir = Paths.get(multipartTempDirectory).toAbsolutePath().normalize();
+                    Files.createDirectories(uploadDir);
+                    return Files.createTempFile(uploadDir, "upload-", ".tmp");
                 })
-                .map(ByteArrayOutputStream::toByteArray);
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
-    private void validateAudio(FilePart file, byte[] bytes) {
-        if (bytes.length == 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Audio file is empty"
-            );
-        }
+    private Mono<Path> validateTempFile(Path tempFile) {
+        return Mono.fromCallable(() -> {
+                    long size = Files.size(tempFile);
 
-        if (bytes.length > MAX_AUDIO_SIZE_BYTES) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Audio file is too large"
-            );
-        }
+                    if (size == 0) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Audio file is empty"
+                        );
+                    }
 
-        String filename = file.filename();
+                    if (size > MAX_AUDIO_SIZE_BYTES) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Audio file is too large"
+                        );
+                    }
 
-        if (filename == null || filename.isBlank()) {
+                    return tempFile;
+                })
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private String validateAndNormalizeFilename(FilePart file) {
+        String rawFilename = file.filename();
+
+        if (rawFilename == null || rawFilename.isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Audio filename is required"
             );
         }
 
-        String lowerFilename = filename.toLowerCase();
+        String normalizedSeparators = rawFilename.replace("\\", "/");
+        String baseName = Paths.get(normalizedSeparators).getFileName().toString();
+
+        if (baseName.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Audio filename is required"
+            );
+        }
+
+        if (baseName.contains("..")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported audio file name"
+            );
+        }
+
+        if (!SAFE_FILENAME_PATTERN.matcher(baseName).matches()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported audio file name"
+            );
+        }
+
+        String lowerFilename = baseName.toLowerCase();
 
         boolean allowed = lowerFilename.endsWith(".wav")
                 || lowerFilename.endsWith(".mp3")
@@ -142,18 +159,63 @@ public class AudioSubmissionService {
                     "Unsupported audio file type"
             );
         }
+
+        return baseName;
+    }
+
+    public Mono<SliceResponse<AudioSubmissionResponse>> getUserSubmissions(Long userId, int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+
+        Pageable pageable = PageRequest.of(
+                safePage,
+                safeSize + 1,
+                Sort.by(Sort.Direction.DESC, "submittedAt")
+        );
+
+        return audioSubmissionRepository.findByUserId(userId, pageable)
+                .map(this::toResponse)
+                .collectList()
+                .map(items -> SliceResponse.of(items, safePage, safeSize));
+    }
+
+    private Mono<AudioSubmission> createSubmission(AudioText text,
+                                                   Long userId,
+                                                   Path tempFile,
+                                                   String safeOriginalFilename) {
+        return audioStorageService.storeAudio(tempFile, safeOriginalFilename, userId, text.getId())
+                .flatMap(storedFile -> {
+                    AudioSubmission submission = AudioSubmission.builder()
+                            .userId(userId)
+                            .audioTextId(text.getId())
+                            .status(AudioSubmissionStatus.SUBMITTED)
+                            .bucketName(storedFile.getBucketName())
+                            .objectKey(storedFile.getObjectKey())
+                            .originalFileName(storedFile.getOriginalFileName())
+                            .contentType(storedFile.getContentType())
+                            .fileSizeBytes(storedFile.getFileSizeBytes())
+                            .payoutAmount(text.getBasePrice())
+                            .submittedAt(LocalDateTime.now())
+                            .build();
+
+                    return audioSubmissionRepository.save(submission);
+                });
+    }
+
+    private void deleteTempFileQuietly(Path tempFile) {
+        try {
+            Files.deleteIfExists(tempFile);
+        } catch (Exception ignored) {
+        }
     }
 
     private AudioSubmissionResponse toResponse(AudioSubmission submission) {
         AudioSubmissionResponse response = new AudioSubmissionResponse();
-
         response.setId(submission.getId());
         response.setAudioTextId(submission.getAudioTextId());
         response.setStatus(submission.getStatus());
         response.setCorrectnessScore(submission.getCorrectnessScore());
         response.setPayoutAmount(submission.getPayoutAmount());
-
         return response;
     }
 }
-

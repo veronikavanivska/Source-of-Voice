@@ -55,23 +55,23 @@ public class AuthService {
         String password = request.getPassword();
 
         if (email.isBlank()) {
-            throw new IllegalArgumentException("Email cannot be empty");
+            throw new IllegalArgumentException("Invalid input data");
         }
 
         if (!checkInput.isEmailValid(email)) {
-            throw new IllegalArgumentException("Enter right email");
+            throw new IllegalArgumentException("Invalid input data");
         }
 
         if (!checkInput.isPasswordStrong(password)) {
-            throw new IllegalArgumentException("Password isn't strong");
+            throw new IllegalArgumentException("Password does not meet requirements");
         }
 
         if (password.isBlank()) {
-            throw new IllegalArgumentException("Password cannot be empty");
+            throw new IllegalArgumentException("Invalid input data");
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("User with this email already exists");
+            throw new IllegalArgumentException("Unable to complete registration");
         }
 
         String hashedPassword = bCrypt.hashPassword(password);
@@ -82,7 +82,7 @@ public class AuthService {
         user.setPassword(hashedPassword);
         user.setUsername(username);
 
-        Role role = roleRepository.findRoleByName(RoleName.USER).orElseThrow(() -> new IllegalArgumentException("No role"));
+        Role role = roleRepository.findRoleByName(RoleName.USER).orElseThrow(() -> new IllegalArgumentException("Unable to complete registration"));
 
         user.getRoles().add(role);
 
@@ -96,19 +96,19 @@ public class AuthService {
         String password = request.getPassword();
 
         if (email.isBlank()) {
-            throw new IllegalArgumentException("Email cannot be empty");
+            throw new IllegalArgumentException("Invalid input data");
         }
 
         if (password.isBlank()) {
-            throw new IllegalArgumentException("Password cannot be empty");
+            throw new IllegalArgumentException("Invalid input data");
         }
 
         User user = userRepository.findByEmailWithRoles(email)
-                .orElseThrow(() -> new IllegalArgumentException("No user with this email found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
 
         if(!bCrypt.checkPassword(password, user.getPassword())){
-            throw new IllegalArgumentException("Wrong password");
+            throw new IllegalArgumentException("Invalid email or password");
         }
 
         List<String> roles = user.getRoles().stream().map(role -> role.getName().name()).toList();
@@ -142,19 +142,19 @@ public class AuthService {
         String rawRefresh = request.getRefreshToken();
 
         if(rawRefresh.isEmpty()){
-            throw new IllegalArgumentException("Token requeired");
+            throw new IllegalArgumentException("Invalid or expired refresh token");
         }
 
         String hashToken = sha256Base64Url(rawRefresh);
 
         RefreshToken currentToken = refreshTokenRepository.findActiveByHash(hashToken,Instant.now())
                 .orElseThrow(
-                        () -> new IllegalArgumentException("Not found active token"));
+                        () -> new IllegalArgumentException("Invalid or expired refresh token"));
 
         Long userId = currentToken.getUser().getId();
         User user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("User not found"));
+                        () -> new IllegalArgumentException("Invalid or expired refresh token"));
 
 
         currentToken.setRevoked(true);
@@ -183,7 +183,7 @@ public class AuthService {
     }
 
     public String logout(Long userId){
-        User user = userRepository.findByIdWithRoles(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findByIdWithRoles(userId).orElseThrow(() -> new IllegalArgumentException("Operation could not be completed"));
 
         user.incrementTokenVersion();
 
@@ -199,14 +199,14 @@ public class AuthService {
         Long userId = request.getUserId();
         String email = request.getEmail();
 
-        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("Operation could not be completed"));
 
         if(!checkInput.isEmailValid(email)){
-            throw new IllegalArgumentException("Not right email");
+            throw new IllegalArgumentException("Invalid email data");
         }
 
         if(userRepository.existsByEmail(email)){
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Unable to change email");
         }
 
 
@@ -227,19 +227,19 @@ public class AuthService {
         String oldPassword = request.getOldPassword();
         String newPassword = request.getNewPassword();
 
-        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("Operation could not be completed"));
 
         if(!bCrypt.checkPassword(oldPassword ,user.getPassword())){
-           throw  new IllegalArgumentException("Password does not match");
+           throw  new IllegalArgumentException("Unable to change password");
         }
 
         if(!checkInput.isPasswordStrong(newPassword)){
-            throw  new IllegalArgumentException("Password should be strong");
+            throw  new IllegalArgumentException("Password does not meet requirements");
 
         }
 
         if(newPassword.equals(oldPassword)){
-            throw  new IllegalArgumentException("New password must be different");
+            throw  new IllegalArgumentException("Password does not meet requirements");
         }
 
         user.incrementTokenVersion();
@@ -257,12 +257,12 @@ public class AuthService {
         Long userId = request.getUserId();
         String username = request.getUsername();
 
-        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findUsersById(userId).orElseThrow(() -> new IllegalArgumentException("Operation could not be completed"));
         if(userRepository.existsByUsername(username)){
-            throw new IllegalArgumentException("username already exists");
+            throw new IllegalArgumentException("Unable to change username");
         }
         if(username.isBlank()){
-            throw new IllegalArgumentException("Username cannot be empty");
+            throw new IllegalArgumentException("Invalid username data");
         }
 
         user.setUsername(username);
